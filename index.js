@@ -159,7 +159,7 @@ async function run() {
         })
 
 
-        app.get('/service', verifyJWT, async (req, res) => {
+        app.get('/service', async (req, res) => {
             const product = {}
             const result = await toolsMenufacture.find(product).toArray();
             res.send(result);
