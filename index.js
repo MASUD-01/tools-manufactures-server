@@ -43,12 +43,6 @@ async function run() {
         const userCollection = client.db('tool_menufactures').collection('users')
         const paymentCollection = client.db('tool_menufactures').collection('payments')
 
-        app.get('/service', async (req, res) => {
-            const query = {};
-            const result = toolsMenufacture.find(query)
-            const services = await result.toArray();
-            res.send(services)
-        })
         app.get('/purchase/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id)
@@ -83,8 +77,16 @@ async function run() {
             res.send({ result, token });
         })
 
-        app.get('/user', async (req, res) => {
+        app.get('/user', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
+            res.send(users);
+        })
+
+        //my profiles need unique user
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const users = await userCollection.findOne(query)
             res.send(users);
         })
 
@@ -148,6 +150,43 @@ async function run() {
             const result = await paymentCollection.insertOne(payment);
             const updatedBooking = await orderCollection.updateOne(filter, updatedDoc);
             res.send(updatedBooking);
+        })
+
+        app.post('/product', async (req, res) => {
+            const product = req.body;
+            const result = await toolsMenufacture.insertOne(product);
+            res.send(result);
+        })
+
+
+        app.get('/service', verifyJWT, async (req, res) => {
+            const product = {}
+            const result = await toolsMenufacture.find(product).toArray();
+            res.send(result);
+        })
+        app.get('/product', async (req, res) => {
+            const product = {}
+            const result = await toolsMenufacture.find(product).toArray();
+            res.send(result);
+        })
+
+        app.delete('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await toolsMenufacture.deleteOne(filter);
+            res.send(result);
+        })
+        app.delete('/ordercancel/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(filter);
+            res.send(result);
+        })
+
+        app.get('/allorder', async (req, res) => {
+            const product = {}
+            const result = await orderCollection.find(product).toArray();
+            res.send(result);
         })
     }
     finally {
